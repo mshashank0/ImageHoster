@@ -1,5 +1,8 @@
 package ImageHoster.model;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,7 +57,7 @@ public class Image {
     //The attribute contains a list of all the tags of an image
     //Note that no column will be generated for this attribute in the database instead a new table will be created
     //Since the mapping is Many to Many, a new table will be generated containing the two columns both referencing to the primary key of both the tables ('images', 'tags')
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "image", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
     public Image() {
