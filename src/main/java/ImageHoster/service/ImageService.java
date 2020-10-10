@@ -19,12 +19,10 @@ public class ImageService {
         return imageRepository.getAllImages();
     }
 
-
     //The method calls the createImage() method in the Repository and passes the image to be persisted in the database
     public void uploadImage(Image image) {
         imageRepository.uploadImage(image);
     }
-
 
     //The method calls the getImageByTitle() method in the Repository and passes the title of the image to be fetched
     public Image getImageByTitle(String title) {

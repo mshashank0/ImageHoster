@@ -51,6 +51,12 @@ public class Image {
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Tag> tags = new ArrayList<>();
 
+    //The attribute contains a list of all the tags of an image
+    //Note that no column will be generated for this attribute in the database instead a new table will be created
+    //Since the mapping is Many to Many, a new table will be generated containing the two columns both referencing to the primary key of both the tables ('images', 'tags')
+    @OneToMany(fetch = FetchType.LAZY)
+    private List<Comment> comments = new ArrayList<>();
+
     public Image() {
     }
 
@@ -68,8 +74,6 @@ public class Image {
         this.description = description;
         this.date = date;
     }
-
-
 
     public Integer getId() {
         return id;
@@ -125,5 +129,13 @@ public class Image {
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }

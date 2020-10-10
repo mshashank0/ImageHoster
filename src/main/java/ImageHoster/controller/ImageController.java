@@ -1,8 +1,10 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
+    @Autowired
+    private CommentService commentService;
+
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
     public String getUserImages(Model model) {
@@ -47,9 +52,16 @@ public class ImageController {
     //this list is then sent to 'images/image.html' file and the tags are displayed
     @RequestMapping("/images/{id}/{title}")
     public String showImage(@PathVariable("id") Integer id, Model model) {
+        //Get image object based on id
         Image image = imageService.getImage(id);
+        //Get comments list posted on image
+        List<Comment> imageComments = commentService.getCommentsOn(image);
+
+        //Add attributes required for the view to model
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",imageComments);
+
         return "images/image";
     }
 
@@ -108,7 +120,7 @@ public class ImageController {
             return "images/edit";
         }
         else {
-            model.addAttribute("editError", true);
+            model.addAttribute("editError", "Only the owner of the image can edit the image");
             return "/images/image";
         }
 
@@ -167,7 +179,7 @@ public class ImageController {
         }
         else {
             model.addAttribute("image", image);
-            model.addAttribute("deleteError", true);
+            model.addAttribute("deleteError", "Only the owner of the image can delete the image");
             return "/images/image";
         }
     }
@@ -214,6 +226,10 @@ public class ImageController {
         return tagString.toString();
     }
 
+    //This method check if the current user is owner of image or not
+    //Get user from the session and compares it with user associated with image object
+    //If both are same then return true
+    //In case of mismatch return false
     private Boolean isCurrentUserOwner(Image image, HttpSession httpSession) {
         //Get user from the session object
         User loggedUser = (User) httpSession.getAttribute("loggeduser");

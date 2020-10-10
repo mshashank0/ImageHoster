@@ -58,7 +58,7 @@ public class UserController {
         else {
             //After successful validating the password redirect to login page
             userService.registerUser(user);
-            return "redirect:/users/login";
+            return "users/login";
         }
     }
 
