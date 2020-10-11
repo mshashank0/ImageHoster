@@ -105,8 +105,7 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session,
-                            final RedirectAttributes redirectAttributes) {
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session) {
         //Get image entity model from the db
         Image image = imageService.getImage(imageId);
         model.addAttribute("image", image);
@@ -121,8 +120,8 @@ public class ImageController {
             return "images/edit";
         }
         else {
-            redirectAttributes.addFlashAttribute("editError", "Only the owner of the image can edit the image");
-            return "redirect:/images/" + image.getId() + "/" + image.getTitle();
+            model.addAttribute("editError", "Only the owner of the image can edit the image");
+            return showImage(image.getId(), model);
         }
     }
 
@@ -165,7 +164,7 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model, HttpSession session, final RedirectAttributes redirectAttributes) {
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model, HttpSession session) {
         //Get image entity model from the db
         Image image = imageService.getImage(imageId);
         //Check if logged in user is the owner of the image.
@@ -178,8 +177,8 @@ public class ImageController {
             return "redirect:/images";
         }
         else {
-            redirectAttributes.addFlashAttribute("deleteError", "Only the owner of the image can delete the image");
-            return "redirect:/images/" + image.getId() + "/" + image.getTitle();
+            model.addAttribute("deleteError", "Only the owner of the image can delete the image");
+            return showImage(image.getId(), model);
         }
     }
 
