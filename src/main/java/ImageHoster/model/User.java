@@ -1,5 +1,7 @@
 package ImageHoster.model;
 
+import ImageHoster.constraint.ValidPassword;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +24,8 @@ public class User {
     @Column(name = "username")
     private String username;
 
+    //Add custom annotation to validate the password string
+    @ValidPassword
     @Column(name = "password")
     private String password;
 

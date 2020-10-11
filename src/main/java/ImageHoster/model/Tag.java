@@ -6,8 +6,8 @@ import java.util.List;
 //@Entity annotation specifies that the corresponding class is a JPA entity
 @Entity
 //@Table annotation provides more options to customize the mapping.
-//Here the name of the table to be created in the database is explicitly mentioned as 'Tags'. Hence the table named 'Tags' will be created in the database with all the columns mapped to all the attributes in 'Tag' class
-@Table(name = "Tags")
+//Here the name of the table to be created in the database is explicitly mentioned as 'tags'. Hence the table named 'Tags' will be created in the database with all the columns mapped to all the attributes in 'Tag' class
+@Table(name = "tags")
 public class Tag {
 
     //@Id annotation specifies that the corresponding attribute is a primary key

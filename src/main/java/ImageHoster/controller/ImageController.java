@@ -1,8 +1,10 @@
 package ImageHoster.controller;
 
+import ImageHoster.model.Comment;
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -26,6 +29,9 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private CommentService commentService;
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -45,11 +51,18 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{title}")
-    public String showImage(@PathVariable("title") String title, Model model) {
-        Image image = imageService.getImageByTitle(title);
+    @RequestMapping("/images/{id}/{title}")
+    public String showImage(@PathVariable("id") Integer id, Model model) {
+        //Get image object based on id
+        Image image = imageService.getImage(id);
+        //Get comments list posted on image
+        List<Comment> imageComments = commentService.getCommentsOn(image);
+
+        //Add attributes required for the view to model
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",imageComments);
+
         return "images/image";
     }
 
@@ -92,13 +105,24 @@ public class ImageController {
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
     @RequestMapping(value = "/editImage")
-    public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model, HttpSession session) {
+        //Get image entity model from the db
         Image image = imageService.getImage(imageId);
-
-        String tags = convertTagsToString(image.getTags());
         model.addAttribute("image", image);
-        model.addAttribute("tags", tags);
-        return "images/edit";
+        //Check if logged in user is the owner of the image.
+        //'isAllowed' will be true if owner of image and logged in user are same.
+        // Otherwise image editing is not allowed
+        Boolean isAllowed = isCurrentUserOwner(image, session);
+
+        if (isAllowed) {
+            String tags = convertTagsToString(image.getTags());
+            model.addAttribute("tags", tags);
+            return "images/edit";
+        }
+        else {
+            model.addAttribute("editError", "Only the owner of the image can edit the image");
+            return showImage(image.getId(), model);
+        }
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -132,7 +156,7 @@ public class ImageController {
         updatedImage.setDate(new Date());
 
         imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        return "redirect:/images/" + updatedImage.getId() + "/" + updatedImage.getTitle();
     }
 
 
@@ -140,11 +164,23 @@ public class ImageController {
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
-        return "redirect:/images";
-    }
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, Model model, HttpSession session) {
+        //Get image entity model from the db
+        Image image = imageService.getImage(imageId);
+        //Check if logged in user is the owner of the image.
+        //'isAllowed' will be true if owner of image and logged in user are same.
+        // Otherwise image deletion is not allowed
+        Boolean isAllowed = isCurrentUserOwner(image, session);
 
+        if (isAllowed) {
+            imageService.deleteImage(imageId);
+            return "redirect:/images";
+        }
+        else {
+            model.addAttribute("deleteError", "Only the owner of the image can delete the image");
+            return showImage(image.getId(), model);
+        }
+    }
 
     //This method converts the image to Base64 format
     private String convertUploadedFileToBase64(MultipartFile file) throws IOException {
@@ -187,4 +223,23 @@ public class ImageController {
 
         return tagString.toString();
     }
+
+    //This method check if the current user is owner of image or not
+    //Get user from the session and compares it with user associated with image object
+    //If both are same then return true
+    //In case of mismatch return false
+    private Boolean isCurrentUserOwner(Image image, HttpSession httpSession) {
+        //Get user from the session object
+        User loggedUser = (User) httpSession.getAttribute("loggeduser");
+        //Gent owner of the image
+        User imageOwner = image.getUser();
+        //Check if logged in user's id is equal to the provided image user
+        if(loggedUser.getId() == imageOwner.getId()) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
 }

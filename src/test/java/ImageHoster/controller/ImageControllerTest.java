@@ -1,10 +1,10 @@
-/*
 package ImageHoster.controller;
 
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
 import ImageHoster.model.UserProfile;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.junit.Test;
@@ -25,7 +25,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @RunWith(SpringRunner.class)
 @WebMvcTest(ImageController.class)
 public class ImageControllerTest {
@@ -36,6 +35,9 @@ public class ImageControllerTest {
 
     @MockBean
     private ImageService imageService;
+
+    @MockBean
+    private CommentService commentService;
 
     @MockBean
     private TagService tagService;
@@ -310,4 +312,3 @@ public class ImageControllerTest {
     }
 }
 
-*/
